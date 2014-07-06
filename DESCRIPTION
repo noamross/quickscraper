@@ -1,7 +1,7 @@
 Package: quickscraper
 Type: Package
 Title: A wrapper for the quickscrape web-scraping framework
-Version: 1.0
+Version: 0.0.1
 Date: 2014-07-01
 Author: Noam Ross <noam.ross@gmail.com>
 Maintainer: Noam Ross <noam.ross@gmail.com>
