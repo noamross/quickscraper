@@ -1,0 +1,156 @@
+# Internal functions to look for an install of node, get the most recent
+# version
+# Gleefully stolen from the rmarkdown package's approach to finding pandoc
+
+# Environment used to cache the current node directory and version
+.node <- new.env()
+.node$dir <- NULL
+.node$version <- NULL
+.node$npm <- NULL
+.node$npm_ver <- NULL
+.node$messages <- character()
+
+#' get the node binary
+node <- function() {
+  find_node()
+  file.path(.node$dir, "node")
+}
+
+npm = function() {
+  find_node()
+  file.path(.node$npm, "npm")
+}
+
+# Scan for a copy of node and set the internal cache if it's found.
+find_node <- function() {
+
+  if (is.null(.node$dir)) {
+
+    # define potential sources
+    sys_node <- Sys.which("node")
+    sys_npm <- Sys.which("npm")
+    sources <- c(getOption("NodePath"),
+                 ifelse(nzchar(sys_node), dirname(sys_node), ""))
+    sources_npm <- c(getOption("NpmPath"),
+                 ifelse(nzchar(sys_npm), dirname(sys_node), ""))
+    if (!is_windows()) {
+      sources <- c(sources, path.expand("~/opt/node"))
+      sources_npm <- c(sources_npm, path.expand("~/opt/npm"))
+    }
+
+    # determine the versions of the sources
+    versions <- lapply(sources, function(src) {
+      if (file.exists(src))
+        get_node_version(src)
+      else
+        numeric_version("0")
+    })
+    
+    versions_npm <- lapply(sources_npm, function(src) {
+      if (file.exists(src))
+        get_node_version(src)
+      else
+        numeric_version("0")
+    })    
+
+    # find the maximum version
+    found_src <- NULL
+    found_ver <- numeric_version("0")
+    for (i in 1:length(sources)) {
+      ver <- versions[[i]]
+      if (ver > found_ver) {
+        found_ver <- ver
+        found_src <- sources[[i]]
+      }
+    }
+
+    found_npm <- NULL
+    found_npmver <- numeric_version("0")
+    for (i in 1:length(sources_npm)) {
+      ver <- versions_npm[[i]]
+      if (ver > found_npmver) {
+        found_npmver <- ver
+        found_npm <- sources[[i]]
+      }
+    }
+
+    # did we find a version?
+    if (!is.null(found_src)) {
+      .node$dir <- found_src
+      .node$npm <- found_npm
+      .node$version <- found_ver
+      .node$npmver <- found_npmver
+    }
+  }
+}
+
+# Get an S3 numeric_version for the node utility at the specified path
+get_node_version <- function(node_dir) {
+  node_path <- file.path(node_dir, "node")
+  version_info <- system(paste(shQuote(node_path), "--version"),
+                           intern = TRUE)
+  version = sub("v", "", version_info)
+  numeric_version(version)
+}
+
+get_npm_version <- function(npm_dir) {
+  node_path <- file.path(node_dir, "npm")
+  version_info <- system(paste(shQuote(node_path), "--version"),
+                           intern = TRUE)
+  numeric_version(version)
+}
+
+is_windows <- function() {
+  identical(.Platform$OS.type, "windows")
+}
+
+#' Create a function to call a wrapped node.js package
+#' @import RJSONIO
+#' @export 
+node_fn_load = function(node_package, r_package) {
+  nodepath = system.file("node", package=r_package)
+  nodepackage_path = file.path(nodepath, node_package)
+  package.json = fromJSON(file.path(nodepackage_path, "package.json"))
+  package_name = package.json$name
+  node_ver_req = package.json$engines["node"]
+  msg = (paste0(package_name, " requires node ", node_ver_req, ". You have node"))
+  .node$messages = c(.node$messages, msg)
+  bin = package.json$bin
+  if(length(bin) > 1) bin = bin[package_name]
+  node_command = do.call(file.path, as.list(c(nodepackage_path, strsplit(bin, "/")[[1]])))
+  fn = function(args=list()) {
+     textargs = ifelse(length(args) > 0,
+                       paste0("--", names(args), " ", args, collapse=" "),
+                       "")
+     node_command = c(node_command, textargs)
+     outfile = tempfile()
+     errfile = tempfile()
+     output = system2(node(), node_command, stdout=outfile, stderr=errfile)
+     return(list(output=output, 
+                 stdout=readChar(outfile, file.info(outfile)$size),
+                 stderr=readChar(errfile, file.info(errfile)$size)))
+      }
+  return(fn)
+  }
+
+node_pkg_build = function(node_package, r_package) {
+  nodepath = system.file("node", package=r_package)
+  nodepackage_path = file.path(nodepath, node_package)
+  npm_out=system2(npm(), args=paste0("install --prefix ", nodepackage_path))
+}
+
+.onAttach <- function(...) {
+  find_node()
+  if (is.null(.node$dir)) {
+    packageStartupMessage("This package requires node.js, which does not appear to be installed on your machine.  Get node at http://nodejs.org.
+            
+            If you have node installed in a non-standard directory, set the directory path with:
+            
+            options(NodePath=PATH)")
+  } else {
+    message("You have node.js installed!")   
+    for(msg in .node$messages) {
+      packageStartupMessage(paste0(msg, " ", .node$version, "."))
+    }
+  }
+} 
