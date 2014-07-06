@@ -1,0 +1,18 @@
+Package: quickscraper
+Type: Package
+Title: A wrapper for the quickscrape web-scraping framework
+Version: 1.0
+Date: 2014-07-01
+Author: Noam Ross <noam.ross@gmail.com>
+Maintainer: Noam Ross <noam.ross@gmail.com>
+Description: For mining content from the web.
+License: MIT
+Imports:
+    RJSONIO,
+    stringi,
+    plyr
+Collate:
+    'node.R'
+    'quickscraper.R'
+    'scrape.R'
+    'startup.R'
