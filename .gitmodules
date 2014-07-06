@@ -1,0 +1,6 @@
+[submodule "inst/journal-scrapers"]
+	path = inst/journal-scrapers
+	url = git@github.com:noamross/journal-scrapers.git
+[submodule "inst/node/quickscrape"]
+	path = inst/node/quickscrape
+	url = git@github.com:noamross/quickscrape.git
