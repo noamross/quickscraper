@@ -22,7 +22,7 @@ binaries, but by using the node package manager the correct ones should be
 selected and installed.
 
 The node wrapping and dependency checking components of this package (In 
-`R/node.r`) will eventually be extracted into a separate package of utilties
+[`R/node.r`](https://github.com/noamross/quickscraper/blob/master/R/node.R)) will eventually be extracted into a separate package of utilties
 for wrapping arbitrary node modules.
 
 ## Usage
