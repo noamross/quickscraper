@@ -4,7 +4,7 @@
 \title{Check node module dependencies and install if missing}
 \usage{
 check_node_fn_deps(node_package, node_dir = "node", r_package = NULL,
-  ask = TRUE)
+  ask = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{node_package}{the directory name of the node package in the R package}
@@ -18,6 +18,8 @@ as the function can't automatically detect the package
 inside \link{.onAttach}}
 
 \item{ask}{Ask before installing dependencies?}
+
+\item{verbose}{Show verbose installation?  If \text{ask=TRUE}, user decides}
 }
 \description{
 Put this function in \link{.onAttach} to check and install node module

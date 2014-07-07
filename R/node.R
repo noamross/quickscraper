@@ -164,9 +164,16 @@ node_fn_load = function(node_package, node_cmd = node_package,
   return(fn)
   }
 
-node_deps_update = function(nodepackage_path) {
-  npm_out=system3(npm(), args=paste0("install --prefix ", nodepackage_path))
-  invisible(npm_out)
+node_deps_update = function(nodepackage_path, verbose=FALSE) {
+  if(!verbose) {
+    npm_out=system3(npm(), args=paste0("install --prefix ", nodepackage_path))
+    return(npm_out$output)
+  } else {
+    npm_out = system2(npm(), args=paste0("install --prefix ", nodepackage_path))
+    status = attr(npm_out, "status")
+    if(length(status)==0) status=0
+    return(status)
+  }
 }
 
 node_deps_installed = function(nodepackage_path) {
@@ -214,9 +221,10 @@ check_node_installed = function() {
 #'                  as the function can't automatically detect the package
 #'                  inside \link{.onAttach}
 #' @param ask Ask before installing dependencies?
+#' @param verbose Show verbose installation?  If \text{ask=TRUE}, user decides
 #' @export
 check_node_fn_deps = function(node_package, node_dir = "node", r_package = NULL,
-                              ask=TRUE) {
+                              ask=TRUE, verbose=FALSE) {
   
   if(is.null(r_package)) r_package = environmentName(parent.frame())
   nodepath = system.file(node_dir, package=r_package)
@@ -243,7 +251,11 @@ check_node_fn_deps = function(node_package, node_dir = "node", r_package = NULL,
     message(package_name, " dependencies are installed.")
   } else {
     if(ask) {
-      ask = readline(paste0(package_name, " has missing dependencies.  Install from www.npmjs.org? (y/n, default is no): "))
+      ask = readline(paste0(package_name, " has missing dependencies.  Install from www.npmjs.org? (y/n, default no, 'v' for verbose install): "))
+      if(ask=="v") {
+        verbose=TRUE
+        ask="yes"
+      }
       if (ask=="") {
         ask = FALSE
       } else {
@@ -252,9 +264,9 @@ check_node_fn_deps = function(node_package, node_dir = "node", r_package = NULL,
       }
     }
     if(ask) {
-      inst_success = node_deps_update(nodepackage_path)$output
+        inst_success = node_deps_update(nodepackage_path, verbose=verbose)
       if(inst_success != 0) {
-        stop(inst_success$stderr)
+        stop("Install failed")
       } else {
         message("Install successful!")
       }
