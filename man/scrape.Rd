@@ -4,7 +4,8 @@
 \title{Scrape data from web pages}
 \usage{
 scrape(urls, url_file = NULL, ratelimit = 3, scraper = "generic_open",
-  args = list(), outdir = NULL)
+  args = list(), outdir = NULL, results = c("load", "save", "both"),
+  .progress = "txt")
 }
 \arguments{
 \item{urls}{A vector of URLs to scrape}

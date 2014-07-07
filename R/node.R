@@ -105,17 +105,47 @@ is_windows <- function() {
 }
 
 #' Create a function to call a wrapped node.js package
+#' 
+#' @param node_package the directory name of the node package
+#' @param the 'bin' command of the node package.  Defaults to the package name
+#' @param node_dir the directory where node packages are kept.  Defaults to
+#'                 'node', which should be a directory under 'inst' when
+#'                 creaing your own package.
+#' @param r_package the package name which wraps the function.  Defaults to the
+#'                  \link{parent.frame}, assuming that \code{node_fn_load} is
+#'                  being used in a package.
+#' @param return_list If \code{TRUE}, the new function will return a list of
+#'                    the return value, stdout, and stderr from the call to the
+#'                    node.js function.  If \code{FALSE}, the new function will
+#'                    return the results of a \link{system2} call.
+#' @param ...         Additional parameters to pass to \link{system2} if
 #' @import jsonlite
 #' @export 
-node_fn_load = function(node_package, node_cmd, r_package) {
-  nodepath = system.file("node", package=r_package)
+node_fn_load = function(node_package, node_cmd = node_package, 
+                        node_dir = "node", r_package = NULL,
+                        return_list = TRUE, ...) {
+  if(is.null(r_package)) r_package = environmentName(parent.frame())
+  nodepath = system.file(node_dir, package=r_package)
   nodepackage_path = file.path(nodepath, node_package)
-  package.json = fromJSON(file.path(nodepackage_path, "package.json"))
-  package_name = package.json$name
-  node_ver_req = package.json$engines["node"]
+  package.json = file.path(nodepackage_path, "package.json")
+  if(!file.exists(package.json)) {
+    nodepackage_path = list.files(path=nodepath, pattern=node_package, 
+                                  recursive=TRUE, include.dirs=TRUE)
+    package.json = file.path(nodepath, nodepackage_path,"package.json")
+    if(!file.exists(package.json)) {
+      stop(paste0("Node package '", node_package, "' not found in R package '",
+                  r_package, "' under directory '", node_dir, "'."))
+    }
+  }
+  package.data = fromJSON(package.json)
+  package_name = package.data$name
+  node_ver_req = package.data$engines["node"]
   msg = (paste0(package_name, " requires node ", node_ver_req, ". You have node"))
   .node$messages = c(.node$messages, msg)
-  bin = package.json$bin[[node_cmd]]
+  bin = package.data$bin[[node_cmd]]
+  if(is.null(bin)) stop(paste0("Command '", bin,  "' not found in node package'",
+                               node_package, "'."))
+                               
   node_command = do.call(file.path, as.list(c(nodepackage_path, strsplit(bin, "/")[[1]])))
   fn = function(args=list()) {
      textargs = ifelse(length(args) > 0,
@@ -124,7 +154,11 @@ node_fn_load = function(node_package, node_cmd, r_package) {
      node_command = c(node_command, textargs)
      outfile = tempfile()
      errfile = tempfile()
-     out = system3(node(), node_command)
+     if(return_list) {
+       out = system3(node(), node_command)
+     } else {
+       out = system2(node(), node_command, ...)
+     }
      return(out)
       }
   return(fn)

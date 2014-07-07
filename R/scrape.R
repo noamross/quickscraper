@@ -1,10 +1,7 @@
 #' @include node.R
 
 #' @export
-qs_cmd = node_fn_load(node_package="quickscrape",
-                      node_cmd="quickscrape", 
-                      r_package="quickscraper")
-
+qs_cmd = node_fn_load("quickscrape")
 
 #' @import stringi
 get_package_scrapers = function() {
@@ -33,8 +30,8 @@ package_scrapers = get_package_scrapers()
 #' @import plyr stringi
 #' @export
 scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open", 
-                  args = list(), outdir=NULL, results=c("load", "save", "both"),
-                  .progress="txt") {
+                  args = list(), outdir=NULL, 
+                  results=c("load", "save", "both"))) {
   results = match.arg(results)
   if(!(results %in% c("load", "save", "both"))) {
     stop("'results' must match 'load', 'save', or 'both")
@@ -87,3 +84,4 @@ scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open",
   if(results=="load") unlink(outdir, recursive=TRUE)
   if(results %in% c("load", "both")) return(output)  
 }
+
