@@ -16,7 +16,7 @@ library(devtools)
 install_github("noamross/quickscraper")
 ```
 
-When first loaded `quickscraper` will ask to install it's node dependencies.
+When first loaded `quickscraper` will ask to install its node dependencies.
 These are not bundled with the package because they contain system-specific
 binaries, but by using the node package manager the correct ones should be
 selected and installed.
