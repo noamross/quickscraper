@@ -28,6 +28,7 @@ package_scrapers = get_package_scrapers()
 #' the domains of URLs.  The scraper can either be one of the included scrapers
 #' (found with \code{names(quickscraper:::package_scrapers)}), the path to a
 #' scraperJSON file, or a scraperJSON file converted to an R list.
+#' @param ratelimit The minimum time between scraping pages.
 #' @param list The form to return results in, either "list", "data.frame", or
 #' "none" to only retain results as JSON files on disk
 #' @param outdir  The directory to write results to.  If NULL, files will be
@@ -37,8 +38,8 @@ package_scrapers = get_package_scrapers()
 #' \code{outdir}. If "both", both.
 #' @import plyr stringi
 #' @export
-scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open", 
-                  outdir=NULL, results=c("load", "save", "both"), args = list())
+scrape = function(urls, url_file=NULL, scraper="generic_open", ratelimit=3,
+                  outdir=NULL, results="both", args = list())
                    {
   results = match.arg(results)
   if(!(results %in% c("load", "save", "both"))) {

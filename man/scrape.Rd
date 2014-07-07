@@ -3,8 +3,8 @@
 \alias{scrape}
 \title{Scrape data from web pages}
 \usage{
-scrape(urls, url_file = NULL, ratelimit = 3, scraper = "generic_open",
-  outdir = NULL, results = c("load", "save", "both"), args = list())
+scrape(urls, url_file = NULL, scraper = "generic_open", ratelimit = 3,
+  outdir = NULL, results = "both", args = list())
 }
 \arguments{
 \item{urls}{A vector of URLs to scrape}
@@ -17,6 +17,8 @@ as \code{urls}.  If \code{NULL}, \code{scrape} will choose scrapers based on
 the domains of URLs.  The scraper can either be one of the included scrapers
 (found with \code{names(quickscraper:::package_scrapers)}), the path to a
 scraperJSON file, or a scraperJSON file converted to an R list.}
+
+\item{ratelimit}{The minimum time between scraping pages.}
 
 \item{list}{The form to return results in, either "list", "data.frame", or
 "none" to only retain results as JSON files on disk}
