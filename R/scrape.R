@@ -1,8 +1,5 @@
 #' @include node.R
 
-
-node_installed()
-
 #' @export
 qs_cmd = node_fn_load("quickscrape")
 
@@ -88,3 +85,8 @@ scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open",
   if(results %in% c("load", "both")) return(output)  
 }
 
+.onAttach = function(...) {
+  check_node_installed()
+  check_node_fn_deps("quickscrape", r_package="quickscraper")
+}
+  
