@@ -21,17 +21,25 @@ package_scrapers = get_package_scrapers()
 #' Take a vector of URLs and scrape data from the associated web pages, using
 #' \code{quickscrape}
 #' @param urls A vector of URLs to scrape
+#' @param url_file Alternatively, a file containing a list or URLs separated by
+#' newlines
 #' @param scraper A single scraper to use, or list of scrapers the same length
 #' as \code{urls}.  If \code{NULL}, \code{scrape} will choose scrapers based on
-#' the domains of URLs
+#' the domains of URLs.  The scraper can either be one of the included scrapers
+#' (found with \code{names(quickscraper:::package_scrapers)}), the path to a
+#' scraperJSON file, or a scraperJSON file converted to an R list.
 #' @param list The form to return results in, either "list", "data.frame", or
 #' "none" to only retain results as JSON files on disk
-#' @param outdir  The directory to write results to.
+#' @param outdir  The directory to write results to.  If NULL, files will be
+#' written to a temporary directory.
+#' @param results Save the downloaded results? If "load", \code{scrape} will
+#' return the results as a list.  If "save", the results will be saved in
+#' \code{outdir}. If "both", both.
 #' @import plyr stringi
 #' @export
 scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open", 
-                  args = list(), outdir=NULL, 
-                  results=c("load", "save", "both")) {
+                  outdir=NULL, results=c("load", "save", "both"), args = list())
+                   {
   results = match.arg(results)
   if(!(results %in% c("load", "save", "both"))) {
     stop("'results' must match 'load', 'save', or 'both")
