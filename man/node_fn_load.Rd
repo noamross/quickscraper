@@ -4,7 +4,8 @@
 \title{Create a function to call a wrapped node.js package}
 \usage{
 node_fn_load(node_package, node_cmd = node_package, node_dir = "node",
-  r_package = NULL, return_list = TRUE, ...)
+  r_package = NULL, return_list = TRUE, checkdeps = TRUE, ask = TRUE,
+  ...)
 }
 \arguments{
 \item{node_package}{the directory name of the node package}
@@ -24,7 +25,12 @@ the return value, stdout, and stderr from the call to the
 node.js function.  If \code{FALSE}, the new function will
 return the results of a \link{system2} call.}
 
-\item{...}{Additional parameters to pass to \link{system2} if}
+\item{checkdeps}{Check to see of node_modele dependencies are installed?}
+
+\item{ask}{If dependencies not installed, ask before installing?}
+
+\item{...}{Additional parameters to pass to \link{system2} if
+                   \code{return_list=TRUE}}
 }
 \description{
 Create a function to call a wrapped node.js package

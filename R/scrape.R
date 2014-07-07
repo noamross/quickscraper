@@ -1,5 +1,8 @@
 #' @include node.R
 
+
+node_installed()
+
 #' @export
 qs_cmd = node_fn_load("quickscrape")
 
@@ -31,7 +34,7 @@ package_scrapers = get_package_scrapers()
 #' @export
 scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open", 
                   args = list(), outdir=NULL, 
-                  results=c("load", "save", "both"))) {
+                  results=c("load", "save", "both")) {
   results = match.arg(results)
   if(!(results %in% c("load", "save", "both"))) {
     stop("'results' must match 'load', 'save', or 'both")

@@ -118,12 +118,16 @@ is_windows <- function() {
 #'                    the return value, stdout, and stderr from the call to the
 #'                    node.js function.  If \code{FALSE}, the new function will
 #'                    return the results of a \link{system2} call.
+#' @param checkdeps   Check to see of node_modele dependencies are installed?
+#' @param ask         If dependencies not installed, ask before installing?
 #' @param ...         Additional parameters to pass to \link{system2} if
+#'                    \code{return_list=TRUE}
+#'                    
 #' @import jsonlite
 #' @export 
 node_fn_load = function(node_package, node_cmd = node_package, 
                         node_dir = "node", r_package = NULL,
-                        return_list = TRUE, ...) {
+                        return_list = TRUE, checkdeps=TRUE, ask=TRUE, ...) {
   if(is.null(r_package)) r_package = environmentName(parent.frame())
   nodepath = system.file(node_dir, package=r_package)
   nodepackage_path = file.path(nodepath, node_package)
@@ -133,20 +137,44 @@ node_fn_load = function(node_package, node_cmd = node_package,
                                   recursive=TRUE, include.dirs=TRUE)
     package.json = file.path(nodepath, nodepackage_path,"package.json")
     if(!file.exists(package.json)) {
-      stop(paste0("Node package '", node_package, "' not found in R package '",
-                  r_package, "' under directory '", node_dir, "'."))
+      stop("Node package '", node_package, "' not found in R package '",
+            r_package, "' under directory '", node_dir, "'.")
     }
   }
   package.data = fromJSON(package.json)
   package_name = package.data$name
   node_ver_req = package.data$engines["node"]
-  msg = (paste0(package_name, " requires node ", node_ver_req, ". You have node"))
-  .node$messages = c(.node$messages, msg)
+  message(package_name, " requires node ", node_ver_req, ". You have node ",
+          .node$version)
+  
+  if(checkdeps) {
+    installed = node_deps_installed(nodepackage_path)
+    if(installed) {
+      message(package_name, " dependencies are installed.")
+    } else {
+      if(ask) {
+        ask = match.arg(readline(paste0(package_name, " has missing dependencies.  Install from http://www.npmjs.org? (y/n)")),
+                        c("yes", "no")) == "yes"
+      }
+      if(ask) {
+        inst_success = node_deps_update(nodepackage_path)$output
+        if(inst_success != 0) {
+          stop(inst_success$stderr)
+        } else {
+          message("Install successful!")
+        }
+      } else {
+        message("Package functions will likely fail without dependencies. Re-load to try installing again")
+      }
+    }
+  }
+  
   bin = package.data$bin[[node_cmd]]
-  if(is.null(bin)) stop(paste0("Command '", bin,  "' not found in node package'",
-                               node_package, "'."))
+  if(is.null(bin)) stop("Command '", bin,  "' not found in node package'",
+                        node_package, "'.")
                                
-  node_command = do.call(file.path, as.list(c(nodepackage_path, strsplit(bin, "/")[[1]])))
+  node_command = do.call(file.path, as.list(c(nodepackage_path,
+                                              strsplit(bin, "/")[[1]])))
   fn = function(args=list()) {
      textargs = ifelse(length(args) > 0,
                        paste0("--", names(args), " ", args, collapse=" "),
@@ -164,26 +192,33 @@ node_fn_load = function(node_package, node_cmd = node_package,
   return(fn)
   }
 
-node_pkg_build = function(node_package, r_package, verbose=TRUE) {
-  nodepath = system.file("node", package=r_package)
-  nodepackage_path = file.path(nodepath, node_package)
-  npm_out=system2(npm(), args=paste0("install --prefix ", nodepackage_path))
+node_deps_update = function(nodepackage_path) {
+  npm_out=system3(npm(), args=paste0("install --prefix ", nodepackage_path))
   invisible(npm_out)
 }
 
-.onAttach <- function(...) {
+node_deps_installed = function(nodepackage_path) {
+  out = system3(npm(), args=paste0("outdated --prefix ", nodepackage_path))
+  out = stri_replace_all_fixed(out$stdout, " > ", ">")
+  out = stri_replace_all_regex(out, "[^\\S\\n]+", ",")
+  out = read.csv(text=out, stringsAsFactors=FALSE)
+  if(any(out$Current=="MISSING")) {
+    return(FALSE)
+  } else {
+    Wanted = numeric_version(out$Wanted)
+    Current = numeric_version(out$Current)
+    if(any(Current < Wanted)) return(FALSE)
+  }
+  return(TRUE)
+}
+
+# 
+node_installed = function() {
   find_node()
   if (is.null(.node$dir)) {
-    packageStartupMessage("This package requires node.js, which does not appear to be installed on your machine.  Get node at http://nodejs.org.
-            
-            If you have node installed in a non-standard directory, set the directory path with:
-            
-            options(NodePath=PATH)")
+    stop("This package requires node.js, which does not appear to be installed on your machine.  Get node at http://nodejs.org.\nIf you have node installed in a non-standard directory, set the directory path with:\n\noptions(NodePath=PATH)")
   } else {
-    message("You have node.js installed!")   
-    for(msg in .node$messages) {
-      packageStartupMessage(paste0(msg, " ", .node$version, "."))
-    }
+    message("You have node.js ", .node$version, " installed.")
   }
 }
 
