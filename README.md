@@ -14,7 +14,7 @@ In R, run,
 if(!require(devtools)) install.packge("devtools")
 library(devtools)
 install_github("noamross/quickscraper")
-``
+```
 
 When first loaded `quickscraper` will ask to install it's node dependencies.
 These are not bundled with the package because they contain system-specific
