@@ -13,9 +13,7 @@ Imports:
     plyr
 Collate:
     'node.R'
-    'quickscraper.R'
     'scrape.R'
-    'startup.R'
 Suggests:
-    testthat
+    testthat,
     roxygen2
