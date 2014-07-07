@@ -3,6 +3,6 @@
 export(node_fn_load)
 export(qs_cmd)
 export(scrape)
-import(RJSONIO)
+import(jsonlite)
 import(plyr)
 import(stringi)

@@ -105,9 +105,9 @@ is_windows <- function() {
 }
 
 #' Create a function to call a wrapped node.js package
-#' @import RJSONIO
+#' @import jsonlite
 #' @export 
-node_fn_load = function(node_package, r_package) {
+node_fn_load = function(node_package, node_cmd, r_package) {
   nodepath = system.file("node", package=r_package)
   nodepackage_path = file.path(nodepath, node_package)
   package.json = fromJSON(file.path(nodepackage_path, "package.json"))
@@ -115,8 +115,7 @@ node_fn_load = function(node_package, r_package) {
   node_ver_req = package.json$engines["node"]
   msg = (paste0(package_name, " requires node ", node_ver_req, ". You have node"))
   .node$messages = c(.node$messages, msg)
-  bin = package.json$bin
-  if(length(bin) > 1) bin = bin[package_name]
+  bin = package.json$bin[[node_cmd]]
   node_command = do.call(file.path, as.list(c(nodepackage_path, strsplit(bin, "/")[[1]])))
   fn = function(args=list()) {
      textargs = ifelse(length(args) > 0,
@@ -125,18 +124,17 @@ node_fn_load = function(node_package, r_package) {
      node_command = c(node_command, textargs)
      outfile = tempfile()
      errfile = tempfile()
-     output = system2(node(), node_command, stdout=outfile, stderr=errfile)
-     return(list(output=output, 
-                 stdout=readChar(outfile, file.info(outfile)$size),
-                 stderr=readChar(errfile, file.info(errfile)$size)))
+     out = system3(node(), node_command)
+     return(out)
       }
   return(fn)
   }
 
-node_pkg_build = function(node_package, r_package) {
+node_pkg_build = function(node_package, r_package, verbose=TRUE) {
   nodepath = system.file("node", package=r_package)
   nodepackage_path = file.path(nodepath, node_package)
   npm_out=system2(npm(), args=paste0("install --prefix ", nodepackage_path))
+  invisible(npm_out)
 }
 
 .onAttach <- function(...) {
@@ -153,4 +151,13 @@ node_pkg_build = function(node_package, r_package) {
       packageStartupMessage(paste0(msg, " ", .node$version, "."))
     }
   }
-} 
+}
+
+system3 = function(command, args=character(), ...) {
+     outfile = tempfile()
+     errfile = tempfile()
+     output = system2(command, args, stdout=outfile, stderr=errfile, ...)
+     return(list(output=output,
+                 stdout = readChar(outfile, file.info(outfile)$size),
+                 stderr = readChar(errfile, file.info(errfile)$size)))
+}

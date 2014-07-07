@@ -8,7 +8,7 @@ Maintainer: Noam Ross <noam.ross@gmail.com>
 Description: For mining content from the web.
 License: MIT
 Imports:
-    RJSONIO,
+    jsonlite,
     stringi,
     plyr
 Collate:

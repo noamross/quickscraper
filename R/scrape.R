@@ -1,7 +1,9 @@
 #' @include node.R
 
 #' @export
-qs_cmd = node_fn_load(node_package="quickscrape", r_package="quickscraper")
+qs_cmd = node_fn_load(node_package="quickscrape",
+                      node_cmd="quickscrape", 
+                      r_package="quickscraper")
 
 
 #' @import stringi
@@ -31,7 +33,13 @@ package_scrapers = get_package_scrapers()
 #' @import plyr stringi
 #' @export
 scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open", 
-                  args = list(), outdir=NULL) {
+                  args = list(), outdir=NULL, results=c("load", "save", "both"),
+                  .progress="txt") {
+  results = match.arg(results)
+  if(!(results %in% c("load", "save", "both"))) {
+    stop("'results' must match 'load', 'save', or 'both")
+  }
+  
   if (!is.null(url_file)) {
       args = c(args, urllist = url_file)
   } else if (length(urls > 1)) {
@@ -63,13 +71,19 @@ scrape = function(urls, url_file=NULL, ratelimit=3, scraper="generic_open",
   args = c(args, output=outdir)
   
   run = qs_cmd(args)
-
-  out_dirs = list.files(outdir)
-  output = alply(out_dirs, 1, function(z) {
-    fromJSON(file.path(outdir, z, "results.json"), simplifyWithNames=FALSE)
-  })
-  attr(output, "split_type") = NULL
-  attr(output, "split_labels") = NULL
-  names(output) = out_dirs
-  return(output)
+  
+  if(results=="save") return(run)  
+  
+  if(results %in% c("save", "both")) {
+    out_dirs = list.files(outdir)
+    output = alply(out_dirs, 1, function(z) {
+      fromJSON(file.path(outdir, z, "results.json"), simplifyVector=FALSE)
+    })
+    attr(output, "split_type") = NULL
+    attr(output, "split_labels") = NULL
+    names(output) = out_dirs
+  }
+  
+  if(results=="load") unlink(outdir, recursive=TRUE)
+  if(results %in% c("load", "both")) return(output)  
 }
