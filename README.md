@@ -5,7 +5,7 @@ web scraping tool.
 
 Note that this repository contains submodule for both 
 [quickscrape](https://github.com/ContentMine/quickscrape) and
-[journal-scrapers(https://github.com/ContentMine/journal-scrapers).  When
+[journal-scrapers](https://github.com/ContentMine/journal-scrapers).  When
 cloning:
 
 ```

@@ -16,3 +16,6 @@ Collate:
     'quickscraper.R'
     'scrape.R'
     'startup.R'
+Suggests:
+    testthat
+    roxygen2
