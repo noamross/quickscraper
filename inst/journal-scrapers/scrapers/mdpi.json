@@ -1,5 +1,5 @@
 {
-  "url": "peerj.com",
+  "url": "mdpi\\.com",
   "elements": {
     "publisher": {
       "selector": "//meta[@name='citation_publisher']",
@@ -60,8 +60,8 @@
       }
     },
     "fulltext_xml": {
-      "selector": "//a[@class='article-download-xml']",
-      "attribute": "href",
+      "selector": "//meta[@name='fulltest_xml']",
+      "attribute": "content",
       "download": {
         "rename": "fulltext.xml"
       }
@@ -72,13 +72,12 @@
       "download": true
     },
     "figure": {
-      "selector": "//div[contains(concat(' ', normalize-space(@class), ' '), ' article-image-download ')]/a",
-      "attribute": "href",
+      "selector": "//div[contains(@id, 'fig')]/div/img",
+      "attribute": "src",
       "download": true
     },
     "figure_caption": {
-      "selector": "//figcaption",
-      "attribute": "text"
+      "selector": "//div[contains(@class, 'html-fig_description')]"
     },
     "license": {
       "selector": "//div[contains(concat(' ', normalize-space(@class), ' '), ' license-p ')]",
