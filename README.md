@@ -5,10 +5,10 @@ web scraping tool.
 
 ## Installation
 
-You need `node.js` installed 0.8 or later to run quickscraper.  You can get it
+You need `node.js` 0.8 or later installed to run quickscraper.  You can get it
 [here](http://nodejs.org/).
 
-In R, run,
+In R, run:
 
 ```
 if(!require(devtools)) install.packge("devtools")
@@ -16,14 +16,16 @@ library(devtools)
 install_github("noamross/quickscraper")
 ```
 
-When first loaded `quickscraper` will ask to install its node dependencies.
+When first loaded, `quickscraper` will ask to install its node module dependencies.
 These are not bundled with the package because they contain system-specific
-binaries, but by using the node package manager the correct ones should be
-selected and installed.
+binaries which would not be allowed on CRAN, but by using the node package
+manager after the R package install,  the correct ones can be selected and
+installed.
 
-The node wrapping and dependency checking components of this package (In 
-[`R/node.r`](https://github.com/noamross/quickscraper/blob/master/R/node.R)) will eventually be extracted into a separate package of utilties
-for wrapping arbitrary node modules.
+The node-wrapping and dependency-checking components of this package (In 
+[`R/node.r`](https://github.com/noamross/quickscraper/blob/master/R/node.R)) 
+will eventually be extracted into a separate package of utilties for wrapping
+arbitrary node modules.
 
 ## Usage
 
@@ -45,4 +47,3 @@ Note that this repository contains both
 [quickscrape](https://github.com/ContentMine/quickscrape) and
 [journal-scrapers](https://github.com/ContentMine/journal-scrapers). These
 are handled using `git subtree`.
-
