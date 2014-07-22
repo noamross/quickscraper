@@ -1,7 +1,7 @@
 {
   "name": "quickscrape",
   "description": "A command line scraping tool for the modern web",
-  "version": "0.2.2",
+  "version": "0.2.7",
   "homepage": "https://github.com/ContentMine/quickscrape",
   "author": {
     "name": "Richard Smith-Unna",
@@ -23,7 +23,7 @@
   ],
   "main": "lib/quickscrape",
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">= 0.8.14"
   },
   "scripts": {
     "test": "mocha",
@@ -34,7 +34,7 @@
     "commander": "~2.2.0",
     "winston": "~0.7.3",
     "which": "~1.0.5",
-    "thresher": "~0.0.3"
+    "thresher": "~0.0.7"
   },
   "bin": {
     "quickscrape": "bin/quickscrape.js"
